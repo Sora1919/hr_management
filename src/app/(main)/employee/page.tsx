@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus } from "lucide-react";
 
 export default function DashboardPage() {
   const [employee, setEmployee] = useState<any[]>([]);
@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const getEmployeeList = async () => {
     setLoading(true);
     try {
-      const fetchEmployee = await api.get("/api/employee/v1/getAllEmployee");
+      const fetchEmployee = await api.get("api/employee/v1/getAllEmployee");
       if (fetchEmployee.status === 200) {
         console.log(fetchEmployee.data);
         const data = fetchEmployee.data;
@@ -40,8 +40,10 @@ export default function DashboardPage() {
 
   const handelDelete = async (id: number) => {
     try {
-      const deleteEmployee = await api.delete(`/api/employee/v1/destroyEmployee/${id}`);
-      if( deleteEmployee.status === 200 ){
+      const deleteEmployee = await api.delete(
+        `/api/employee/v1/destroyEmployee/${id}`
+      );
+      if (deleteEmployee.status === 200) {
         toast.success("Employee deleted successfully");
         getEmployeeList();
       }
@@ -75,9 +77,10 @@ export default function DashboardPage() {
                 <TableCell>{e.linkedin}</TableCell>
                 <TableCell>
                   <Button
-                  size="icon"
-                  variant="destructive"
-                  onClick={() => handelDelete(e.id)}>
+                    size="icon"
+                    variant="destructive"
+                    onClick={() => handelDelete(e.id)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>

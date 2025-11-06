@@ -19,11 +19,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import { api } from "@/api/api";
 
 const formSchema = z.object({
@@ -36,7 +35,6 @@ const formSchema = z.object({
 });
 
 const LoginForm = () => {
-
   const [isLogin, setIsLogin] = useState(false);
 
   const router = useRouter();
@@ -49,19 +47,37 @@ const LoginForm = () => {
   });
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLogin(true);
-    try{
-      const login = await api.post("/api/users/v1/login", data);
-      if(login.status === 200){
+    const payload = {
+      email: data.email,
+      password: data.password,
+    };
+    try {
+      const response = await api.post("api/users/v1/login", payload, {
+        withCredentials: true,
+      });
+      if (response.status === 200) {
+        const responseData = response.data;
+
+        const token = responseData.data?.token;
+
+        if (!token) {
+          throw new Error("No token received from server");
+        }
+        // Store token safely
+        if (typeof window !== "undefined") {
+          localStorage.setItem("token", token);
+          console.log("Token stored:", token); // Debug log
+        }
+
         toast.success("Login successful");
+
         setTimeout(() => {
-          router.push("/profile");
-        },2000);
+          router.push("/");
+        }, 1000);
       }
-    }
-    catch(error: any){
+    } catch (error: any) {
       toast.error(error.response.data.message);
-    }
-    finally{
+    } finally {
       setIsLogin(false);
     }
   };
@@ -110,6 +126,7 @@ const LoginForm = () => {
                       <Input
                         className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-black dark:text-white"
                         placeholder="Enter password Text"
+                        type="password"
                         {...field}
                       />
                     </FormControl>
@@ -118,8 +135,11 @@ const LoginForm = () => {
                   </FormItem>
                 )}
               />
-              <Button className="text-white dark:bg-slate-500 w-full cursor-pointer">
-                Login
+              <Button
+                className="text-white dark:bg-slate-500 w-full cursor-pointer"
+                type="submit"
+              >
+                {isLogin ? "Logging in..." : "Login"}
               </Button>
             </form>
           </Form>
