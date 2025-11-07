@@ -27,12 +27,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import ThemeToggler from "./ThemeToggler";
+import Logout from "./auth/Logout";
 
 const Sidebar = () => {
   return (
     <Command className="bg-secondary rounded-none">
       <CommandInput placeholder="Type a command or search..." />
-      <CommandList>
+      <CommandList className="min-h-100">
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Suggestions">
           <CommandItem>
@@ -63,6 +64,7 @@ const Sidebar = () => {
         <CommandSeparator />
         <CommandGroup heading="Settings">
           <ThemeToggler />
+          <Logout />
         </CommandGroup>
       </CommandList>
     </Command>

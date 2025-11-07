@@ -42,7 +42,6 @@ const formSchema = z.object({
   }),
 });
 
-
 const RegisterForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -56,36 +55,29 @@ const RegisterForm = () => {
     },
   });
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
-  setIsSubmitting(true);
-  const payload = {
-    name: data.name,
-    email: data.email, 
-    password: data.password,
-    confirmPassword: data.confirmPassword,
-  };
-  
+    setIsSubmitting(true);
+    const payload = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      confirmPassword: data.confirmPassword,
+    };
 
-  try{
-    const createUser = await api.post("/api/users/v1/register", payload);
-    if(createUser.status === 201){
-      toast.success("User created successfully");
-      
-      setTimeout(() => {
-        router.push("/auth");
-        location.reload();
-      },2000);
-      
-   
+    try {
+      const createUser = await api.post("/api/users/v1/register", payload);
+      if (createUser.status === 201) {
+        toast.success("User created successfully");
+
+        setTimeout(() => {
+          router.push("/auth");
+          location.reload();
+        }, 2000);
+      }
+    } catch (error: any) {
+      toast.error(error.response.data.message);
+    } finally {
+      setIsSubmitting(false);
     }
-  }
-  catch(error: any){
-    toast.error(error.response.data.message);
-  }
-  finally{
-    setIsSubmitting(false);
-  }
-  
-    
   };
   return (
     <>
@@ -152,6 +144,7 @@ const RegisterForm = () => {
                       <Input
                         className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-black dark:text-white"
                         placeholder="Enter password Text"
+                        type="password"
                         {...field}
                       />
                     </FormControl>
@@ -172,6 +165,7 @@ const RegisterForm = () => {
                       <Input
                         className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-black dark:text-white"
                         placeholder="Enter confirmPassword Text"
+                        type="password"
                         {...field}
                       />
                     </FormControl>
