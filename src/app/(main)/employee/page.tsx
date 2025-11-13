@@ -227,7 +227,7 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
                   <TableCell>
                     <Switch
                       checked={employee.isActive}
-                      onCheckedChange={(newStatus) =>
+                      onCheckedChange={(newStatus : boolean) =>
                         handleStatusChange(employee.id, newStatus)
                       }
                       disabled={updatingIds.has(employee.id)}
