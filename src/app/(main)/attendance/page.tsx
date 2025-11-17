@@ -17,7 +17,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -154,7 +154,9 @@ export default function AttendancePage({ page, search }: AttendancePageProps) {
             {filteredAttendance.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-4 text-center">
-                  No attendance found matching your search.
+                  {searchTerm
+                    ? `No attendance found for "${searchTerm}"`
+                    : "No attendance found."}
                 </TableCell>
               </TableRow>
             ) : attendance.length === 0 ? (
@@ -164,7 +166,7 @@ export default function AttendancePage({ page, search }: AttendancePageProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              attendance.map((a) => (
+              filteredAttendance.map((a) => (
                 <TableRow key={a.id}>
                   <TableCell>{a.id}</TableCell>
                   <TableCell>{a.employee.name}</TableCell>

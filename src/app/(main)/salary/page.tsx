@@ -38,6 +38,7 @@ export default function DashboardPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>ID</TableHead>
               <TableHead>Employee Name</TableHead>
               <TableHead>Basic Salary</TableHead>
               <TableHead>Allowance</TableHead>
@@ -53,6 +54,7 @@ export default function DashboardPage() {
           <TableBody>
             {salary.map((s) => (
               <TableRow key={s.id}>
+                <TableCell>{s.id}</TableCell>
                 <TableCell>{s.employee.name}</TableCell>
                 <TableCell>{s.basicSalary}</TableCell>
                 <TableCell>{s.allowances}</TableCell>

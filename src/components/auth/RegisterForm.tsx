@@ -24,8 +24,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/api/api";
 import { toast } from "sonner";
-import { ca } from "zod/v4/locales";
-import { refresh } from "next/cache";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -64,7 +62,7 @@ const RegisterForm = () => {
     };
 
     try {
-      const createUser = await api.post("/api/users/v1/register", payload);
+      const createUser = await api.post("/api/employee/v1/register", payload);
       if (createUser.status === 201) {
         toast.success("User created successfully");
 

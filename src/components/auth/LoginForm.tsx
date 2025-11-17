@@ -52,28 +52,21 @@ const LoginForm = () => {
       password: data.password,
     };
     try {
-      const response = await api.post("api/users/v1/login", payload, {
+      const response = await api.post("api/employee/v1/login", payload, {
         withCredentials: true,
       });
       if (response.status === 200) {
         const responseData = response.data;
-
         const token = responseData.data?.token;
-
+        setTimeout(() => {
+          // Store token in localStorage
+          localStorage.setItem("token", token);
+          toast.success("Login successful");
+          router.push("/");
+        }, 1500);
         if (!token) {
           throw new Error("No token received from server");
         }
-        // Store token safely
-        if (typeof window !== "undefined") {
-          localStorage.setItem("token", token);
-          console.log("Token stored:", token); // Debug log
-        }
-
-        toast.success("Login successful");
-
-        setTimeout(() => {
-          router.push("/");
-        }, 1000);
       }
     } catch (error: any) {
       toast.error(error.response.data.message);
@@ -109,7 +102,9 @@ const LoginForm = () => {
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>This is your email.</FormDescription>
+                    <FormDescription>
+                      Your email when you sign up
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -130,7 +125,9 @@ const LoginForm = () => {
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>This is your password.</FormDescription>
+                    <FormDescription>
+                      Your password when you sign up
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
