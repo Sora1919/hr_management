@@ -1,5 +1,4 @@
 "use client";
-
 import { api } from "@/api/api";
 import {
   Table,
@@ -24,10 +23,14 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Define proper interface for Employee
+//interface for Employee for type checking
 interface Employee {
   id: string;
   name: string;
+  email: string;
+  department: string;
+  position: string;
+  role: string;
   isActive: boolean;
 }
 const PAGE_LIMIT = 5;
@@ -53,15 +56,12 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
         params: { page: page, limit: PAGE_LIMIT, search: search || "" },
       });
       if (response.status === 200) {
-        console.log(response.data);
-
         // Handle different response structures
-        const employeesData = response.data.data || [];
+        const employeesData = response.data.data;
         setEmployees(employeesData);
         setTotalCount(response.data.totalCount);
       }
     } catch (error) {
-      console.error(error);
       toast.error("Failed to fetch employees");
     } finally {
       setLoading(false);
@@ -80,17 +80,6 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
     window.history.replaceState(null, "", newUrl);
   };
 
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      getEmployeeList(1, searchTerm);
-      setCurrentPage(1);
-    }, 1500);
-    return () => clearTimeout(timerId);
-  }, [searchTerm]);
-  useEffect(() => {
-    getEmployeeList(currentPage);
-  }, [currentPage]);
-
   //page change effect
   useEffect(() => {
     updateUrlParams(currentPage, searchTerm);
@@ -102,6 +91,12 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
       setCurrentPage(page);
     }
   };
+  const filterEmployee = useMemo(() => {
+    return employees.filter((emp) =>
+      emp.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [employees, searchTerm]);
+
   const pages = useMemo(() => {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }, [totalPages]);
@@ -112,39 +107,36 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
     getEmployeeList(1, searchTerm);
   };
 
-  const handleStatusChange = async (employeeId: string, newStatus: boolean) => {
+  const handleStatusChange = async (employeeId: string, isActive: boolean) => {
     // Add to updating set to show loading for this specific switch
     setUpdatingIds((prev) => new Set(prev).add(employeeId));
 
     try {
-      const response = await api.patch(
-        `/api/employee/v1/updateEmployeeStatus/${employeeId}`, // Better endpoint name
+      const response = await api.put(
+        `/api/employee/v1/updateEmployee/${employeeId}`,
         {
-          isActive: newStatus,
+          isActive: isActive,
         }
       );
-
-      console.log("Status update response:", response);
+      // console.log("Status update response:", response);
 
       if (response.status === 200) {
         // Update local state
         setEmployees((prevEmployees) =>
           prevEmployees.map((emp) =>
-            emp.id === employeeId ? { ...emp, isActive: newStatus } : emp
+            emp.id === employeeId ? { ...emp, isActive: isActive } : emp
           )
         );
 
         toast.success(
-          `Employee ${newStatus ? "activated" : "deactivated"} successfully`
+          `Employee ${isActive ? "activated" : "deactivated"} successfully`
         );
       }
     } catch (error: any) {
-      console.error("Status update error:", error);
-
       // Revert the change in UI on error
       setEmployees((prevEmployees) =>
         prevEmployees.map((emp) =>
-          emp.id === employeeId ? { ...emp, isActive: !newStatus } : emp
+          emp.id === employeeId ? { ...emp, isActive: !isActive } : emp
         )
       );
 
@@ -177,14 +169,7 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
               }
             }}
           />
-          <Button
-            className="cursor-pointer mb-4"
-            // onClick={() => {
-            //   setCurrentPage(1);
-            //   getEmployeeList(1, searchTerm);
-            // }}
-            onClick={handleSearch}
-          >
+          <Button className="cursor-pointer mb-4" onClick={handleSearch}>
             <Search size={18} />
           </Button>
         </div>
@@ -197,15 +182,21 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Department</TableHead>
+              <TableHead>Position</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {employees.length === 0 ? (
+            {filterEmployee.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-4">
-                  No employees found
+                  {searchTerm.trim() !== ""
+                    ? "Employee not found"
+                    : "No employees available"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -213,6 +204,17 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
                 <TableRow key={employee.id}>
                   <TableCell>{employee.id}</TableCell>
                   <TableCell className="font-medium">{employee.name}</TableCell>
+                  <TableCell className="font-medium">
+                    {employee.email}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {employee.department}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {employee.position ? employee.position : "-"}
+                  </TableCell>
+                  <TableCell className="font-medium">{employee.role}</TableCell>
+
                   <TableCell>
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${

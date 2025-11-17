@@ -1,29 +1,17 @@
 import {
   Command,
-  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command";
 import {
-  Book,
   CircleDollarSign,
   ClipboardList,
-  CreditCard,
-  DollarSign,
-  Folder,
   LayoutDashboard,
-  List,
-  Newspaper,
-  Settings,
-  User,
-  User2,
   Users,
-  Users2,
 } from "lucide-react";
 import Link from "next/link";
 import ThemeToggler from "./ThemeToggler";
@@ -39,14 +27,6 @@ const Sidebar = () => {
           <CommandItem>
             <LayoutDashboard className="mr-2 h-4 w-4" />
             <Link href={"/"}>Dashboard</Link>
-          </CommandItem>
-          <CommandItem>
-            <Users className="mr-2 h-4 w-4" />
-            <Link href={"/users"}>Users</Link>
-          </CommandItem>
-          <CommandItem>
-            <User className="mr-2 h-4 w-4" />
-            <Link href={"/profile"}>Profile</Link>
           </CommandItem>
           <CommandItem>
             <Users className="mr-2 h-4 w-4" />
