@@ -41,7 +41,7 @@ export default function DashboardPage() {
     setUpdatingIds((prev) => new Set(prev).add(salaryId));
 
     try {
-      const response = await api.put(
+      const response = await api.patch(
           `/api/salary/v1/updateSalaryStatus/${salaryId}`,
           {
             status: status
