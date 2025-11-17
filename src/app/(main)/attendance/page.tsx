@@ -44,12 +44,9 @@ export default function AttendancePage({ page, search }: AttendancePageProps) {
   const getAttendance = async (page: number, search?: string) => {
     setLoading(true);
     try {
-      const fetchAttendance = await api.get(
-        "api/attendance/v1/getAttendance/",
-        {
-          params: { page: page, limit: PAGE_LIMIT, search: search || "" },
-        }
-      );
+      const fetchAttendance = await api.get("api/attendance/v1/getAttendance", {
+        params: { page: page, limit: PAGE_LIMIT, search: search || "" },
+      });
       if (fetchAttendance.status === 200) {
         const data = fetchAttendance.data;
         setattendance(data.data);
@@ -73,18 +70,6 @@ export default function AttendancePage({ page, search }: AttendancePageProps) {
     // Replace the current URL without triggering a navigation
     window.history.replaceState(null, "", newUrl);
   };
-
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      getAttendance(1, searchTerm);
-      setCurrentPage(1);
-    }, 1500);
-    return () => clearTimeout(timerId);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    getAttendance(currentPage);
-  }, [currentPage]);
 
   //page change effect
   useEffect(() => {
@@ -147,7 +132,6 @@ export default function AttendancePage({ page, search }: AttendancePageProps) {
               <TableHead>Check-In Time</TableHead>
               <TableHead>Check-out Time</TableHead>
               <TableHead>Location</TableHead>
-              {/* <TableHead>Image</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -166,7 +150,7 @@ export default function AttendancePage({ page, search }: AttendancePageProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredAttendance.map((a) => (
+              attendance.map((a) => (
                 <TableRow key={a.id}>
                   <TableCell>{a.id}</TableCell>
                   <TableCell>{a.employee.name}</TableCell>
@@ -183,7 +167,6 @@ export default function AttendancePage({ page, search }: AttendancePageProps) {
                       : "-"}
                   </TableCell>
                   <TableCell>{a.location}</TableCell>
-                  {/* <TableCell>{e.imageUrl}</TableCell> */}
                 </TableRow>
               ))
             )}
