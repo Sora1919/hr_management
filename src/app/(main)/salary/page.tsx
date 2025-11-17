@@ -10,9 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
 import { toast } from "sonner";
-import { set } from "zod";
 import { Switch } from "@/components/ui/switch";
 
 export default function DashboardPage() {
@@ -42,14 +40,16 @@ export default function DashboardPage() {
     setUpdatingIds((prev) => new Set(prev).add(salaryId));
 
     try {
-      const respon = await api.put(
-        `/api/salary/v1/updateSalaryStatus/${salaryId}`,
-        {
-          status: status,
-        }
+
+      const response = await api.patch(
+          `/api/salary/v1/updateSalaryStatus/${salaryId}`,
+          {
+            status: status
+          }
+
       );
 
-      if (respon.status === 200) {
+      if (response.status === 200) {
         setSalary((prevSalarys) =>
           prevSalarys.map((sal) =>
             sal.id === salaryId ? { ...sal, status: status } : sal
