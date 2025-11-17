@@ -16,12 +16,51 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { FilePenLine, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+
+//validation form with zod
+const formSchema = z.object({
+  department: z.string().min(1, {
+    message: "Department is required",
+  }),
+  position: z.string().min(1, {
+    message: "Position is required",
+  }),
+});
 
 //interface for Employee for type checking
 interface Employee {
@@ -40,14 +79,51 @@ interface EmployeePageProps {
 }
 export default function EmployeePage({ page, search }: EmployeePageProps) {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [params, setParams] = useState<{ id: string } | null>(null);
+  const [editEmployee, setEditEmployee] = useState(false);
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(Number(page) || 1);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState(search || "");
+  const router = useRouter();
   const totalPages = useMemo(() => {
     return Math.ceil(totalCount / PAGE_LIMIT);
   }, [totalCount]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      department: "",
+      position: "",
+    },
+  });
+
+  const handleEdit = async (data: z.infer<typeof formSchema>) => {
+    if (!params?.id) return;
+    setEditEmployee(true);
+    try {
+      const payload = {
+        department: data.department,
+        position: data.position,
+      };
+      const response = await api.put(
+        `/api/employee/v1/updateEmployee/${params.id}`,
+        payload
+      );
+      if (response.status === 200) {
+        toast.success("Employee updated successfully");
+        setTimeout(() => {
+          setEditEmployee(false);
+          getEmployeeList(currentPage, searchTerm);
+        }, 1000);
+      }
+
+      // toast.success("Employee updated successfully")
+    } catch (e: any) {
+      toast.error(e.response.data.message);
+    }
+  };
 
   const getEmployeeList = async (page: number, search?: string) => {
     setLoading(true);
@@ -128,9 +204,9 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
           )
         );
 
-        toast.success(
-          `Employee ${isActive ? "activated" : "deactivated"} successfully`
-        );
+        // toast.success(
+        //   `Employee ${isActive ? "activated" : "deactivated"} successfully`
+        // );
       }
     } catch (error: any) {
       // Revert the change in UI on error
@@ -140,7 +216,7 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
         )
       );
 
-      toast.error(error.response?.data?.message || "Failed to update status");
+      // toast.error(error.response?.data?.message || "Failed to update status");
     } finally {
       // Remove from updating set
       setUpdatingIds((prev) => {
@@ -227,6 +303,104 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
                     </span>
                   </TableCell>
                   <TableCell>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setParams({ id: employee.id });
+
+                            // Pre-fill form using react-hook-form
+                            form.setValue(
+                              "department",
+                              employee.department || ""
+                            );
+                            form.setValue("position", employee.position || "");
+                          }}
+                        >
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <FilePenLine className="cursor-pointer" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit Employee</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </Button>
+                      </DialogTrigger>
+
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Edit Employee</DialogTitle>
+                          <DialogDescription>
+                            Update the employee's department and position
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <Form {...form}>
+                          <form
+                            onSubmit={form.handleSubmit(handleEdit)}
+                            className="space-y-4"
+                          >
+                            {/* Department */}
+                            <FormField
+                              control={form.control}
+                              name="department"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Department</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            {/* Position */}
+                            <FormField
+                              control={form.control}
+                              name="position"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Position</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            {/* Status Switch */}
+                            <div className="flex items-center gap-3 pt-2">
+                              <Label>Status</Label>
+                              <Switch
+                                checked={employee.isActive}
+                                disabled={updatingIds.has(employee.id)}
+                                onCheckedChange={(newStatus) =>
+                                  handleStatusChange(employee.id, newStatus)
+                                }
+                              />
+                              {updatingIds.has(employee.id) && (
+                                <span className="text-xs text-gray-500">
+                                  Updating...
+                                </span>
+                              )}
+                            </div>
+
+                            <DialogFooter>
+                              <DialogClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                              </DialogClose>
+                              <Button type="submit">Save changes</Button>
+                            </DialogFooter>
+                          </form>
+                        </Form>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                  {/* <TableCell>
                     <Switch
                       checked={employee.isActive}
                       onCheckedChange={(newStatus) =>
@@ -244,7 +418,7 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
                         Updating...
                       </span>
                     )}
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))
             )}

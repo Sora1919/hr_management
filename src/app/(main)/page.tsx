@@ -20,12 +20,12 @@ export default function Home() {
       const employeeData = fetchEmployee.data.data;
       setEmployees(employeeData);
 
-      // const fetchAttendance = await api.get(
-      //   "/api/attendance/v1/getAttendance/"
-      // );
+      const fetchAttendance = await api.get(
+        "/api/attendance/v1/getAttendance/"
+      );
       //fetch attendance from api
-      // const attendanceData = fetchAttendance.data.data;
-      // setAttendances(attendanceData);
+      const attendanceData = fetchAttendance.data.data;
+      setAttendances(attendanceData);
 
       //fetch salary from api
       // const fetchSalary = await api.get("/api/salary/v1/getAllSalary/");
