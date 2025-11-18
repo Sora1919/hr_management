@@ -28,9 +28,9 @@ export default function Home() {
       setAttendances(attendanceData);
 
       //fetch salary from api
-      // const fetchSalary = await api.get("/api/salary/v1/getAllSalary/");
-      // const salaryData = fetchSalary.data.data;
-      // setSalaries(salaryData);
+      const fetchSalary = await api.get("/api/salary/v1/getAllSalary/");
+      const salaryData = fetchSalary.data.data;
+      setSalaries(salaryData);
     } catch (e) {
       toast.error("Error fetching pages");
     }
