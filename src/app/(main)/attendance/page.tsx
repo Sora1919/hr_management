@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { toast } from "sonner";
 
 const PAGE_LIMIT = 5;
 
@@ -53,7 +54,7 @@ export default function AttendancePage({ page, search }: AttendancePageProps) {
         setTotalCount(data.totalCount);
       }
     } catch (error) {
-      console.error(error);
+      toast.error(`No attendance records found for ${searchTerm}`);
     } finally {
       setLoading(false);
     }

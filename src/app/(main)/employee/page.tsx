@@ -141,7 +141,7 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
         setTotalCount(response.data.totalCount);
       }
     } catch (error) {
-      toast.error("Failed to fetch employees");
+      toast.error(`No employee records found for ${searchTerm}`);
     } finally {
       setLoading(false);
     }
