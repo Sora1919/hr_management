@@ -50,12 +50,14 @@ export default function SalaryRecord( { search, page }: SalaryRecordProps) {
         setLoading(true);
         try {
           const fetchAttendance = await api.get("api/salary/v1/getAllSalary", {
-            params: { page: page, limit: PAGE_LIMIT, search: search || "" },
+            params: { page: page, 
+              limit: PAGE_LIMIT, 
+              search: search || "" },
           });
           if (fetchAttendance.status === 200) {
             const data = fetchAttendance.data;
-            setSalary(data.data || []);
-            setTotalCount(data.totalCount || 0);
+            setSalary(data.data);
+            setTotalCount(data.totalCount);
           }
         } catch (error) {
           toast.error(`No slary records found for ${searchTerm}`);
@@ -115,25 +117,7 @@ export default function SalaryRecord( { search, page }: SalaryRecordProps) {
 
 
 
-  
-  const getSalaryList = async () => {
-    setLoading(true);
-    try {
-      const fetchSalary = await api.get("/api/salary/v1/getAllSalary/");
-      if (fetchSalary.status === 200) {
-        const data = fetchSalary.data;
-        setSalary(data.data);
-      }
-    } catch (error) {
-      toast.error("Failed to fetch salary records");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    getSalaryList();
-  }, []);
 
   const handelPaymntChange = async (salaryId: string, status: boolean) => {
     setUpdatingIds((prev) => new Set(prev).add(salaryId));
