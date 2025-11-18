@@ -60,6 +60,7 @@ const formSchema = z.object({
   position: z.string().min(1, {
     message: "Position is required",
   }),
+  isActive: z.boolean(),
 });
 
 //interface for Employee for type checking
@@ -96,6 +97,7 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
     defaultValues: {
       department: "",
       position: "",
+      isActive: true,
     },
   });
 
@@ -106,6 +108,7 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
       const payload = {
         department: data.department,
         position: data.position,
+        isActive: data.isActive,
       };
       const response = await api.put(
         `/api/employee/v1/updateEmployee/${params.id}`,
@@ -183,49 +186,49 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
     getEmployeeList(1, searchTerm);
   };
 
-  const handleStatusChange = async (employeeId: string, isActive: boolean) => {
-    // Add to updating set to show loading for this specific switch
-    setUpdatingIds((prev) => new Set(prev).add(employeeId));
+  // const handleStatusChange = async (employeeId: string, isActive: boolean) => {
+  //   // Add to updating set to show loading for this specific switch
+  //   setUpdatingIds((prev) => new Set(prev).add(employeeId));
 
-    try {
-      const response = await api.put(
-        `/api/employee/v1/updateEmployee/${employeeId}`,
-        {
-          isActive: isActive,
-        }
-      );
-      // console.log("Status update response:", response);
+  //   try {
+  //     const response = await api.put(
+  //       `/api/employee/v1/updateEmployee/${employeeId}`,
+  //       {
+  //         isActive: isActive,
+  //       }
+  //     );
+  //     // console.log("Status update response:", response);
 
-      if (response.status === 200) {
-        // Update local state
-        setEmployees((prevEmployees) =>
-          prevEmployees.map((emp) =>
-            emp.id === employeeId ? { ...emp, isActive: isActive } : emp
-          )
-        );
+  //     if (response.status === 200) {
+  //       // Update local state
+  //       setEmployees((prevEmployees) =>
+  //         prevEmployees.map((emp) =>
+  //           emp.id === employeeId ? { ...emp, isActive: isActive } : emp
+  //         )
+  //       );
 
-        // toast.success(
-        //   `Employee ${isActive ? "activated" : "deactivated"} successfully`
-        // );
-      }
-    } catch (error: any) {
-      // Revert the change in UI on error
-      setEmployees((prevEmployees) =>
-        prevEmployees.map((emp) =>
-          emp.id === employeeId ? { ...emp, isActive: !isActive } : emp
-        )
-      );
+  //       // toast.success(
+  //       //   `Employee ${isActive ? "activated" : "deactivated"} successfully`
+  //       // );
+  //     }
+  //   } catch (error: any) {
+  //     // Revert the change in UI on error
+  //     setEmployees((prevEmployees) =>
+  //       prevEmployees.map((emp) =>
+  //         emp.id === employeeId ? { ...emp, isActive: !isActive } : emp
+  //       )
+  //     );
 
-      // toast.error(error.response?.data?.message || "Failed to update status");
-    } finally {
-      // Remove from updating set
-      setUpdatingIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(employeeId);
-        return newSet;
-      });
-    }
-  };
+  //     // toast.error(error.response?.data?.message || "Failed to update status");
+  //   } finally {
+  //     // Remove from updating set
+  //     setUpdatingIds((prev) => {
+  //       const newSet = new Set(prev);
+  //       newSet.delete(employeeId);
+  //       return newSet;
+  //     });
+  //   }
+  // };
 
   return (
     <div className="p-6">
@@ -284,7 +287,7 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
                     {employee.email}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {employee.department}
+                    {employee.department ? employee.department : "-"}
                   </TableCell>
                   <TableCell className="font-medium">
                     {employee.position ? employee.position : "-"}
@@ -306,16 +309,17 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
+                          className="cursor-pointer"
                           variant="outline"
                           onClick={() => {
                             setParams({ id: employee.id });
 
-                            // Pre-fill form using react-hook-form
                             form.setValue(
                               "department",
                               employee.department || ""
                             );
                             form.setValue("position", employee.position || "");
+                            form.setValue("isActive", employee.isActive);
                           }}
                         >
                           <Tooltip>
@@ -373,52 +377,39 @@ export default function EmployeePage({ page, search }: EmployeePageProps) {
                             />
 
                             {/* Status Switch */}
-                            <div className="flex items-center gap-3 pt-2">
-                              <Label>Status</Label>
-                              <Switch
-                                checked={employee.isActive}
-                                disabled={updatingIds.has(employee.id)}
-                                onCheckedChange={(newStatus) =>
-                                  handleStatusChange(employee.id, newStatus)
-                                }
-                              />
-                              {updatingIds.has(employee.id) && (
-                                <span className="text-xs text-gray-500">
-                                  Updating...
-                                </span>
+                            <FormField
+                              control={form.control}
+                              name="isActive"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center gap-2">
+                                  <FormLabel>Status</FormLabel>
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                </FormItem>
                               )}
-                            </div>
-
+                            />
                             <DialogFooter>
                               <DialogClose asChild>
-                                <Button variant="outline">Cancel</Button>
+                                <Button
+                                  variant="outline"
+                                  className="cursor-pointer"
+                                >
+                                  Cancel
+                                </Button>
                               </DialogClose>
-                              <Button type="submit">Save changes</Button>
+                              <Button type="submit" className="cursor-pointer">
+                                Update
+                              </Button>
                             </DialogFooter>
                           </form>
                         </Form>
                       </DialogContent>
                     </Dialog>
                   </TableCell>
-                  {/* <TableCell>
-                    <Switch
-                      checked={employee.isActive}
-                      onCheckedChange={(newStatus : boolean) =>
-                        handleStatusChange(employee.id, newStatus)
-                      }
-                      disabled={updatingIds.has(employee.id)}
-                      aria-label={
-                        employee.isActive
-                          ? "Deactivate employee"
-                          : "Activate employee"
-                      }
-                    />
-                    {updatingIds.has(employee.id) && (
-                      <span className="ml-2 text-xs text-gray-500">
-                        Updating...
-                      </span>
-                    )}
-                  </TableCell> */}
                 </TableRow>
               ))
             )}

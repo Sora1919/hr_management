@@ -10,9 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
 import { toast } from "sonner";
-import { set } from "zod";
 import { Switch } from "@/components/ui/switch";
 
 export default function DashboardPage() {
@@ -36,39 +34,39 @@ export default function DashboardPage() {
   const handelPaymntChange = async (salaryId: string, status: boolean) => {
     setUpdatingIds((prev) => new Set(prev).add(salaryId));
 
-    try{
-      const respon = await api.put(
-        `/api/salary/v1/updateSalaryStatus/${salaryId}`,
+    try {
+      const respon = await api.patch(
+        `api/salary/v1/updateSalaryStatus/${salaryId}`,
         {
-          status: status
+          status: status,
         }
       );
+      // console.log(respon);
 
-
-      if(respon.status === 200){
-        setSalary((prevSalarys) => 
+      if (respon.status === 200) {
+        setSalary((prevSalarys) =>
           prevSalarys.map((sal) =>
             sal.id === salaryId ? { ...sal, status: status } : sal
           )
         );
-        toast.success(
-          `Salary ${status ? "paid" : "pending"} successfully`
-        );
+        toast.success(`Salary ${status ? "paid" : "pending"} successfully`);
       }
-        }catch(error : any){
-          setSalary((prevSalarys) =>
-            prevSalarys.map((sal) =>
-              sal.id === salaryId ? { ...sal, status: !status } : sal
-            )
-          );
-          toast.error(error.response?.data?.message || "Fail to update salary payment status");
-          } finally {
-            setUpdatingIds ((prev) => {
-              const newSet = new Set (prev);
-              newSet.delete(salaryId);
-              return newSet;
-            });
-          }
+    } catch (error: any) {
+      setSalary((prevSalarys) =>
+        prevSalarys.map((sal) =>
+          sal.id === salaryId ? { ...sal, status: !status } : sal
+        )
+      );
+      toast.error(
+        error.response?.data?.message || "Fail to update salary payment status"
+      );
+    } finally {
+      setUpdatingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(salaryId);
+        return newSet;
+      });
+    }
   };
 
   return (
@@ -103,35 +101,30 @@ export default function DashboardPage() {
                 <TableCell>{s.paymentMethod}</TableCell>
                 <TableCell>
                   <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        s.status
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {s.status ? "Paided" : "Pending"}
-                    </span>
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      s.status
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {s.status ? "Paided" : "Pending"}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <Switch
                     checked={s.status}
-                    onCheckedChange={(newState : boolean) =>
+                    onCheckedChange={(newState: boolean) =>
                       handelPaymntChange(s.id, newState)
                     }
-                    disabled = {updatingIds.has(s.id)}
-                    aria-label={
-                      s.status
-                      ? "Cancel Payment"
-                      : "Pay Now"
-                    }
-                    />
-                    {updatingIds.has(s.id) && (
-                      <span className="ml-2 text-xs text-gray-500">
-                        Updating...
-                      </span>
-                    )}
+                    disabled={updatingIds.has(s.id)}
+                    aria-label={s.status ? "Cancel Payment" : "Pay Now"}
+                  />
+                  {updatingIds.has(s.id) && (
+                    <span className="ml-2 text-xs text-gray-500">
+                      Updating...
+                    </span>
+                  )}
                 </TableCell>
-
               </TableRow>
             ))}
           </TableBody>
